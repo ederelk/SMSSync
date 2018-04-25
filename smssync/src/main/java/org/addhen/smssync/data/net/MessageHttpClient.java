@@ -29,6 +29,7 @@ import org.addhen.smssync.data.util.Logger;
 import org.addhen.smssync.domain.entity.HttpNameValuePair;
 import org.addhen.smssync.domain.util.DataFormatUtil;
 import org.addhen.smssync.smslib.sms.ProcessSms;
+import org.addhen.smssync.BuildConfig;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -60,6 +61,7 @@ public class MessageHttpClient extends BaseHttpClient {
 
     private FileManager mFileManager;
 
+
     @Inject
     public MessageHttpClient(Context context, FileManager fileManager) {
         super(context);
@@ -78,6 +80,7 @@ public class MessageHttpClient extends BaseHttpClient {
         final Gson gson = new Gson();
         try {
             execute();
+
             Response response = getResponse();
             int statusCode = response.code();
             if (statusCode != 200 && statusCode != 201) {
@@ -85,8 +88,11 @@ public class MessageHttpClient extends BaseHttpClient {
                 return false;
             }
 
-            SmssyncResponse smssyncResponses = gson.fromJson(response.body().string(),
+
+            String jsonStr = response.body().string();
+            SmssyncResponse smssyncResponses = gson.fromJson(jsonStr,
                     SmssyncResponse.class);
+
             if (smssyncResponses.getPayload().isSuccess()) {
                 // auto response message is enabled to be received from the
                 // server.
@@ -98,9 +104,10 @@ public class MessageHttpClient extends BaseHttpClient {
             if (!TextUtils.isEmpty(payloadError)) {
                 setServerError(payloadError, statusCode);
             } else {
-                setServerError(response.body().string(), statusCode);
+                setServerError(jsonStr, statusCode);
             }
         } catch (Exception e) {
+            Logger.log("eder -> ", e.toString());
             log("Request failed", e);
             setClientError("Request failed. " + e.getMessage() + "\n sync url " + syncUrl.getUrl());
         }
@@ -117,6 +124,19 @@ public class MessageHttpClient extends BaseHttpClient {
         // Clear set params before adding new one to clear the previous one
         getParams().clear();
         setHeader("Content-Type", syncScheme.getContentType());
+
+        // for development
+        if (BuildConfig.DEBUG) {
+            setHeader("X-Parse-REST-API-Key", "0d1b632c-cca6-4eaa-90f4-d22afc1f635f");
+            setHeader("X-Parse-Application-Id", "LAND_LW");
+        }else{
+            // for production
+            setHeader("X-Parse-REST-API-Key", "d464b554-5bf4-4dc4-b621-8c3b4d3331d4");
+            setHeader("X-Parse-Application-Id", "landlw-ll-TGO");
+        }
+
+
+
         addParam(syncScheme.getKey(SyncScheme.SyncDataKey.SECRET), syncUrl.getSecret());
         addParam(syncScheme.getKey(SyncScheme.SyncDataKey.FROM), message.getMessageFrom());
         addParam(syncScheme.getKey(SyncScheme.SyncDataKey.MESSAGE), message.getMessageBody());

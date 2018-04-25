@@ -26,10 +26,10 @@ public class SmssyncResponse {
 
     private static final long serialVersionUID = -6696308336215002660L;
 
-    private Payload payload;
+    private Payload result;
 
     public Payload getPayload() {
-        return payload;
+        return result;
     }
 
     public class Payload {
@@ -79,7 +79,7 @@ public class SmssyncResponse {
     @Override
     public String toString() {
         return "SmssyncResponse{" +
-                "payload=" + payload +
+                "payload=" + result +
                 '}';
     }
 }

@@ -133,7 +133,7 @@ public class InternalWebServiceDataRepository implements WebServiceRepository {
         webServiceEntity.setKeywords("Nairobi, Austin, Auckland");
         webServiceEntity.setSecret("smssync");
         webServiceEntity.setKeywordStatus(WebServiceEntity.KeywordStatus.ENABLED);
-        webServiceEntity.setStatus(WebServiceEntity.Status.ENABLED);
+        webServiceEntity.setStatus(WebServiceEntity.Status.DISABLED);
         webServiceEntity.setSyncScheme(new SyncSchemeEntity());
         return webServiceEntity;
     }
@@ -145,17 +145,27 @@ public class InternalWebServiceDataRepository implements WebServiceRepository {
         webServiceEntity.setTitle("Demo title Two");
         webServiceEntity.setKeywords("Lion, Rhino, Leopard, Buffalo");
         webServiceEntity.setSecret("smssync");
-        webServiceEntity.setStatus(WebServiceEntity.Status.ENABLED);
+        webServiceEntity.setStatus(WebServiceEntity.Status.DISABLED);
         webServiceEntity.setSyncScheme(new SyncSchemeEntity());
         return webServiceEntity;
     }
 
+//    private WebServiceEntity getWebServiceEntityThree() {
+//        WebServiceEntity webServiceEntity = new WebServiceEntity();
+//        webServiceEntity._id = 3l;
+//        webServiceEntity.setUrl("http://ushahidi-platform-api-release.herokuapp.com/smssync");
+//        webServiceEntity.setTitle("Demo title Three");
+//        webServiceEntity.setSecret("smssync");
+//        webServiceEntity.setStatus(WebServiceEntity.Status.DISABLED);
+//        webServiceEntity.setSyncScheme(new SyncSchemeEntity());
+//        return webServiceEntity;
+//    }
     private WebServiceEntity getWebServiceEntityThree() {
         WebServiceEntity webServiceEntity = new WebServiceEntity();
         webServiceEntity._id = 3l;
-        webServiceEntity.setUrl("http://ushahidi-platform-api-release.herokuapp.com/smssync");
-        webServiceEntity.setTitle("Demo title Three");
-        webServiceEntity.setSecret("smssync");
+        webServiceEntity.setUrl("http://localhost:1337/api.landlw/functions/sms.payment.confirmation.create");
+        webServiceEntity.setTitle("LandLw");
+        webServiceEntity.setSecret("Togo-LandLw-SMS-payment");
         webServiceEntity.setStatus(WebServiceEntity.Status.ENABLED);
         webServiceEntity.setSyncScheme(new SyncSchemeEntity());
         return webServiceEntity;
