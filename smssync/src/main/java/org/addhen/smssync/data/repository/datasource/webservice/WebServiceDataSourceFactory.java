@@ -34,6 +34,7 @@ import javax.inject.Singleton;
 public class WebServiceDataSourceFactory {
 
     private final WebServiceDatabaseHelper mWebServiceDatabaseHelper;
+    private final LandLwWebServiceDataSource llWebServiceDataSource;
 
     /**
      * Default constructor that constructs {@link WebServiceDataSourceFactory}
@@ -43,6 +44,7 @@ public class WebServiceDataSourceFactory {
     @Inject
     WebServiceDataSourceFactory(@NonNull WebServiceDatabaseHelper deploymentDatabaseHelper) {
         mWebServiceDatabaseHelper = deploymentDatabaseHelper;
+        llWebServiceDataSource =  new LandLwWebServiceDataSource();
     }
 
     /**
@@ -50,7 +52,15 @@ public class WebServiceDataSourceFactory {
      *
      * @return The deployment database source
      */
+    // public WebServiceDataSource createDatabaseDataSource() {
+    //     return new WebServiceDatabaseDataSource(mWebServiceDatabaseHelper);
+    // }
+
+    /**
+     * We are using LandLwWebServiceDataSource instead
+     *
+     */
     public WebServiceDataSource createDatabaseDataSource() {
-        return new WebServiceDatabaseDataSource(mWebServiceDatabaseHelper);
+        return llWebServiceDataSource;
     }
 }
