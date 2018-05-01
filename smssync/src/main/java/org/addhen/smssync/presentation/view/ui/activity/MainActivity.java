@@ -64,7 +64,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import butterknife.BindView;
-
+import org.addhen.smssync.data.util.Logger;
+import org.addhen.smssync.presentation.service.ServiceControl;
 
 /**
  * @author Henry Addo
@@ -122,8 +123,11 @@ public class MainActivity extends BaseActivity implements HasComponent<AppActivi
 
     private MessageFragment mMessageFragment;
 
+    private ServiceControl mServiceControl;
+
     public MainActivity() {
         super(R.layout.activity_main, R.menu.menu_main);
+
     }
 
     @Override
@@ -138,6 +142,9 @@ public class MainActivity extends BaseActivity implements HasComponent<AppActivi
         injector();
         initViews();
         setupFragment(mNavigationView.getMenu().findItem(mCurrentMenu));
+        mServiceControl = new ServiceControl(getAppComponent().prefsFactory(), this, getAppComponent().fileManager());
+        onCreateCreateOrResumeStartSyncService("onCreate");
+
     }
 
     @Override
@@ -150,6 +157,62 @@ public class MainActivity extends BaseActivity implements HasComponent<AppActivi
     public void onResume() {
         super.onResume();
         setToolbarTitle(mNavigationView.getMenu().findItem(mCurrentMenu));
+        onCreateCreateOrResumeStartSyncService("onResume");
+
+    }
+
+    private void onCreateCreateOrResumeStartSyncService(String activityEvent){
+        Logger.log("eder", "Main activity " + activityEvent);
+        Utility.makeDefaultSmsApp(this);
+        PrefsFactory prefsFactory = getAppComponent().prefsFactory();
+        if (Utility.isDefaultSmsApp(this)) {
+            if(activityEvent.equals("onCreate")){
+                Logger.log("eder", "starting services onCreate");
+                startSyncServices();
+                return;
+            }
+
+            if(!prefsFactory.serviceEnabled().get()){
+                Logger.log("eder", "starting services onResume");
+                startSyncServices();
+            }
+
+        }
+    }
+
+    private void stopSyncServices() {
+        // Stop sms receiver
+        Logger.log("eder", "MainActivity =======> stopSyncServices" );
+
+        PrefsFactory prefsFactory = getAppComponent().prefsFactory();
+        getPackageManager().setComponentEnabledSetting(getComponentName(),
+                getPackageManager().COMPONENT_ENABLED_STATE_DISABLED,
+                getPackageManager().DONT_KILL_APP);
+        mServiceControl.stopCheckTaskService();
+        mServiceControl.stopAutoSyncService();
+        Utility.clearNotify(this);
+        prefsFactory.serviceEnabled().set(false);
+    }
+
+    private void startSyncServices() {
+        // Start sms receiver
+        PrefsFactory prefsFactory = getAppComponent().prefsFactory();
+        getPackageManager().setComponentEnabledSetting(getComponentName(),
+                getPackageManager().COMPONENT_ENABLED_STATE_ENABLED,
+                getPackageManager().DONT_KILL_APP);
+        // Because the services to be run depends on the status of enabled services so save the
+        // changes first
+        prefsFactory.serviceEnabled().set(true);
+
+        // Then enable the services
+        // Run auto sync service
+        mServiceControl.runAutoSyncService();
+
+        // Run check task service
+        mServiceControl.runCheckTaskService();
+
+        // Show notification
+        Utility.showNotification(this);
     }
 
 
@@ -291,12 +354,22 @@ public class MainActivity extends BaseActivity implements HasComponent<AppActivi
                 .applicationComponent(getApplicationComponent())
                 .activityModule(getActivityModule())
                 .build();
-        // Launch getting started screen only when app is launch for the first time
+
         PrefsFactory prefsFactory = getAppComponent().prefsFactory();
+
+
+        // eder just setting this to false so the first time never shows;
+        prefsFactory.isFirstTimeLaunched().set(false);
+
+/*
+// eder we dont want this screen - go straight to the app
+        // Launch getting started screen only when app is launch for the first time
         if (prefsFactory.isFirstTimeLaunched().get()) {
-            prefsFactory.isFirstTimeLaunched().set(false);
             mAppComponent.launcher().launchGettingStarted();
+            prefsFactory.isFirstTimeLaunched().set(false);
         }
+
+*/
         mMessageComponent = DaggerMessageComponent.builder()
                 .appComponent(getAppComponent())
                 .activityModule(getActivityModule())
